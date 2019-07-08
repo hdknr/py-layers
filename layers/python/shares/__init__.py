@@ -4,10 +4,15 @@ import os
 import json
 import datetime
 from time import mktime
+import urllib.request 
 
 
 LOGLEVEL = os.environ.get('LOGLEVEL', logging.INFO)
 
+
+def request(url):
+    req = urllib.request.Request(url)                                                                                       
+    return urllib.request.urlopen(req)
  
 def getLogger():
     logger = logging.getLogger()
@@ -22,6 +27,12 @@ def get_instances():
     instances = [i["InstanceId"]
                  for r in res["Reservations"] for i in r["Instances"]]
     return instances
+
+
+def ec2_address():
+    url = 'http://169.254.169.254/latest/meta-data/public-ipv4'                                                             
+    with request(url) as res:
+        return res.read().decode('utf8')
 
 
 class JSONEncoder(json.JSONEncoder):
