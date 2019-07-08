@@ -37,3 +37,40 @@ def dumps(data):
 def sanitize(data):
     return json.loads(dumps(data))
     
+
+class Aws(object):
+    _client_name = ''
+    _session = None
+     
+    def __init__(self, session=None, profile_name=None):
+        self._session = session or boto3.Session(profile_name=profile_name)
+        self._current_client = None
+
+    @property
+    def session(self):
+        return self._session
+
+    @property
+    def credentials(self):
+        return self.sessin.get_credentials()
+ 
+    def get_client(self, client_name=None, region_name=None):
+        kwargs = {}
+        if not client_name:
+            client_name = self._client_name
+        if region_name:
+            kwargs['region_name'] = region_name
+
+        return self.session.client(client_name, **kwargs)
+
+    def set_current_client(self, client=None, client_name=None, region_name=None):
+        self._current_client = client or self.get_client(
+            client_name=client_name, region_name=region_name)
+
+    @property
+    def client_name(self):
+        return self._client_name
+
+    @property
+    def client(self):
+        return self._current_client
