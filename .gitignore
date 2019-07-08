@@ -1,0 +1,50 @@
+*.log
+*.pyc
+*.retry
+.svn
+*.sqlite3
+
+# editors
+.ropeproject
+*~
+.*~
+*.swp
+.vscode
+
+# python
+*.egg-info
+build
+dist
+
+# mac
+.DS_Store
+
+# Ansible
+ansible/keys/ssh.conf
+ansible/data
+
+# jupyter
+
+.ipynb_checkpoints
+
+# docs
+~*.xlsx
+
+# schemaspy
+bin/*.jar
+bin/schemaspy
+
+# ndenv
+.node-version
+
+# tmp
+tmp
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
