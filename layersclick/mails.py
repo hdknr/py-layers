@@ -29,7 +29,7 @@ def forward_mail(ctx, bucket, message_id, prefix, settings):
     else:
         if prefix and not prefix.endswith('/'):
             prefix = prefix + '/'
-        
+
         # Fake Event
         receipt = dict(recipients=[])
         mail = dict(messageId=message_id)
