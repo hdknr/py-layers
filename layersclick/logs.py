@@ -17,12 +17,8 @@ def logs(ctx, profile_name):
 @click.option('--seconds', '-s', default=None)
 @click.pass_context
 def filter(ctx, group_name, pattern, seconds):
-    try:
-        res = filter_events(group_name, pattern, seconds=seconds)
-        print(J(res))
-    except:
-        import traceback
-        print(traceback.format_exc())
+    res = filter_events(group_name, pattern, seconds=seconds)
+    click.echo(J(res))
 
 
 @logs.command()

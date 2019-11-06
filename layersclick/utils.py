@@ -6,7 +6,7 @@ from bson import json_util
 
 
 def J(data, indent=2, **kwargs):
-    return json.dumps(data, indent=indent, **kwargs)
+    return json.dumps(data, indent=indent, default=json_util.default, **kwargs)
 
 
 def import_settings(path):
