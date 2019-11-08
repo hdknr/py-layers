@@ -14,7 +14,7 @@ def sns(ctx, profile_name):
 
 @sns.command()
 @click.pass_context
-def list_topics(ctx):
+def topic_list(ctx):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns.html#SNS.Client.list_topics
     res = all_topics()
     click.echo(J(res))

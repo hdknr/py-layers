@@ -1,9 +1,10 @@
 import click
 import boto3
 import layerslib
-from .utils import setup
+from .utils import setup, J
 import os
 import zipfile
+from layerslib import debug
 
 
 @click.group()
@@ -35,3 +36,9 @@ def build(ctx, path):
 
     zf.close()
 
+
+@builder.command()
+@click.pass_context
+def info(ctx):
+    '''Information'''
+    click.echo(J(debug.info()))

@@ -78,3 +78,21 @@ def set_role(ctx, function_name, role):
         Role=role,
     )
     click.echo(J(res))
+
+
+@lambdas.command()
+@click.argument('function_name')
+@click.argument('key')
+@click.argument('value')
+@click.pass_context
+def set_env(ctx, function_name, key, value):
+    '''Set Environment Variable to Lambda Function'''
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.get_function_configuration
+    info = client().get_function_configuration(FunctionName=function_name)
+    defaults = {'Variables': {}}
+    envs = info.get('Environment', defaults)
+    envs['Variables'][key] = value
+
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.update_function_configuration
+    res = client().update_function_configuration(FunctionName=function_name, Environment=envs)
+    click.echo(J(res))

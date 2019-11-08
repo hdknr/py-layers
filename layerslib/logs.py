@@ -12,10 +12,13 @@ def all_groups():
 
 def metric_filter(name, namespace):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.describe_metric_filters
-    return client().describe_metric_filters(
+    res = client().describe_metric_filters(
         metricName=name,
         metricNamespace=namespace,
     )
+    filters = res.get('metricFilters', None)
+    if filters and len(filters) > 0:
+        return filters[0]
 
 
 def filter_events(group_name, pattern, dt_to=None, seconds=3000, limit=10):
@@ -36,3 +39,8 @@ def filter_events(group_name, pattern, dt_to=None, seconds=3000, limit=10):
         filterPattern=pattern,
         limit=limit,
     )
+
+def get_triger(message):
+    node = 'Trigger'
+    if node in message:
+        return message[node]

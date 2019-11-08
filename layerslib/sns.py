@@ -28,3 +28,11 @@ def publish(topic_arn, message, subject=None):
 def publish_by_name(topic_name, message, subject=None):
     topic = find_topic(topic_name)
     return topic and publish(topic['TopicArn'], message, subject=subject)
+
+
+def get_sns_message_from_event(event):
+    prefix = 'Records'
+    node = 'Sns'
+    if prefix in event and len(event[prefix]) > 0:
+        if node in event[prefix][0]:
+            return event[prefix][0][node]

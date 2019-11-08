@@ -3,6 +3,7 @@ import json
 import os
 import importlib.util
 from bson import json_util
+import requests
 
 
 def J(data, indent=2, **kwargs):
@@ -34,8 +35,13 @@ def create_session(profile_name):
 
     return (session, credentials)
 
+
 def setup(ctx, profile_name, settings=None):
     if settings:
         ctx.obj['settings'] = create_settings(settings)
     if profile_name:
         (ctx.obj['session'] , ctx.obj['credentials']) = create_session(profile_name)
+
+
+def my_ipaddress():
+    return requests.get('http://inet-ip.info/ip').text

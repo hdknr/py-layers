@@ -1,4 +1,12 @@
 import boto3
+import json
+
+
+def client():
+    return boto3.client('ec2')
+
+def resource():
+    return boto3.resource('ec2')
 
 
 def F(key, value):
@@ -31,9 +39,8 @@ def get_instances(filters=[]):
     - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances
     - https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeInstances.html
     '''
-    ec2 = boto3.client('ec2')
     q = filters and dict(Filters=filters) or {}
-    res = ec2.describe_instances(**q)
+    res = client().describe_instances(**q)
     instances = [i for r in res["Reservations"] for i in r["Instances"]]
     return instances
 
@@ -42,9 +49,22 @@ def get_instance_ids(*args, **kwargs):
     return [i['InstanceId'] for i in get_instances(*args, **kwargs)]
 
 
+def vpcs(name=None):
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_vpcs
+    args = name and dict(Filters=[{'Name': 'tag:Name', 'Values': [name]}]) or {}
+    res = client().describe_vpcs(**args)
+    return res.get('Vpcs', [])
+
+
+def get_vpc(name):
+    res = vpcs(name)
+    if len(res) == 1:
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#vpc
+        return resource().Vpc(res[0]['VpcId'])
+
+
 def create_image(instance_id, ami_name, description):
-    ec2 = boto3.client('ec2')
-    return ec2.create_image(
+    return client().create_image(
         Description=description,
         NoReboot=True,
         InstanceId=instance_id,
@@ -56,8 +76,7 @@ def delete_image(image_id):
     '''
     - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.deregister_image
     '''
-    ec2 = boto3.client('ec2')
-    return ec2.deregister_image(ImageId=image_id)
+    return client().deregister_image(ImageId=image_id)
 
 
 def get_images(owners=['self'], filters=[]):
@@ -65,11 +84,52 @@ def get_images(owners=['self'], filters=[]):
     - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_images
     - https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeImages.html
     '''
-    ec2 = boto3.client('ec2')
     q = filters and dict(Filters=filters) or {}
-    images = ec2.describe_images(Owners=owners, **q)['Images']
+    images = client().describe_images(Owners=owners, **q)['Images']
     return images
 
 
 def get_image_ids(*args, **kwargs):
     return [i['ImageId'] for i in get_images(*args, **kwargs)]
+
+
+def all_secgroups(name=None):
+    vpc_ids = [i['VpcId'] for i in vpcs()]
+    Filters=[dict(Name='vpc-id', Values=vpc_ids)]
+    response = client().describe_security_groups(Filters=Filters)
+    if name:
+        return [
+            i
+            for i in response.get('SecurityGroups', [])
+            if json.dumps(i).find(name) >=0
+        ]
+
+    return response.get('SecurityGroups', [])
+
+
+
+def authorize_port(group_id, description, cidr, port, proto='tcp'):
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.authorize_security_group_ingress
+    ips = dict(
+        CidrIp=cidr,
+        Description=description,
+    )
+    perms = dict(
+        IpProtocol=proto,
+        FromPort=port,
+        ToPort=port,
+        IpRanges=[ips]
+    )
+    return client().authorize_security_group_ingress(
+        GroupId=group_id, IpPermissions=[perms])
+
+
+def revoke_port(group_id, cidr, port, proto='tcp'):
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.SecurityGroup.revoke_ingress
+    sg = resource().SecurityGroup(group_id) 
+    return sg.revoke_ingress(
+        CidrIp=cidr,
+        IpProtocol=proto,
+        FromPort=port,
+        ToPort=port,
+    )
