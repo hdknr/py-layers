@@ -2,7 +2,7 @@ import click
 import boto3
 import json
 from .utils import setup, J, my_ipaddress
-from layerslib.ec2 import get_instances, all_secgroups, authorize_port, revoke_port
+from layerslib import ec2 as EC2 
 
 
 @click.group()
@@ -16,7 +16,7 @@ def ec2(ctx, profile_name):
 @click.pass_context
 def instance_list(ctx):
     '''ec2: get Instance'''
-    instances = get_instances()
+    instances = EC2.get_instances()
     click.echo(J(instances))
 
 
@@ -34,7 +34,7 @@ def vpc_detail(ctx, name):
 @click.pass_context
 def port_list(ctx, group):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_security_groups
-    response = all_secgroups(name=group)
+    response = EC2.all_secgroups(name=group)
     for g in response:
         for p in g.get('IpPermissions', []):
             for r in p.get('IpRanges', []):
@@ -66,12 +66,12 @@ def vpc_instance_list(ctx, vpc):
 @click.pass_context
 def myip_allow(ctx, port, description, group, proto):
     ''' Allow *PORT* number for current computer network '''
-    response = all_secgroups(name=group)
+    response = EC2.all_secgroups(name=group)
     group_ids = [i['GroupId'] for i in response]
     myip = my_ipaddress() 
     for gid in group_ids:
         click.echo(f"allowing {gid}: {proto}/{port} for {myip}")
-        res = authorize_port(gid, description,  f"{myip}/32", int(port), proto)
+        res = EC2.authorize_port(gid, description,  f"{myip}/32", int(port), proto)
         click.echo(J(res))
 
 
@@ -81,10 +81,23 @@ def myip_allow(ctx, port, description, group, proto):
 @click.option('--proto', '-p', default='tcp', help="Protocol(tcp|udp|...)")
 @click.pass_context
 def myip_reject(ctx, port, group, proto):
-    response = all_secgroups(name=group)
+    response = EC2.all_secgroups(name=group)
     group_ids = [i['GroupId'] for i in response]
     myip = my_ipaddress() 
     for gid in group_ids:
         click.echo(f"rejecting {gid}: {proto}/{port} for {myip}")
-        res = revoke_port(gid, f"{myip}/33", int(port), proto)
-        click.echo(Jl(res))
+        res = EC2.revoke_port(gid, f"{myip}/33", int(port), proto)
+        click.echo(J(res))
+
+
+@ec2.command()
+@click.argument('group_id')
+@click.pass_context
+def ip_permissions(ctx, group_id):
+    ''' IP Permissions for Security Group'''
+    # jq '.[] | select(.ToPort=1433) | .IpRanges[] | [.CidrIp, .Descri^Cion] | @tsv'
+    sg = EC2.get_security_group(group_id)
+    res = sg.ip_permissions
+    click.echo(J(res))
+
+

@@ -107,7 +107,6 @@ def all_secgroups(name=None):
     return response.get('SecurityGroups', [])
 
 
-
 def authorize_port(group_id, description, cidr, port, proto='tcp'):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.authorize_security_group_ingress
     ips = dict(
@@ -133,3 +132,7 @@ def revoke_port(group_id, cidr, port, proto='tcp'):
         FromPort=port,
         ToPort=port,
     )
+
+
+def get_security_group(id):
+    return resource().SecurityGroup(id)
