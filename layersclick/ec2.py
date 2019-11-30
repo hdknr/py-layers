@@ -1,6 +1,7 @@
 import click
 import boto3
 import json
+import requests
 from .utils import setup, J, my_ipaddress
 from layerslib import ec2 as EC2 
 
@@ -101,3 +102,8 @@ def ip_permissions(ctx, group_id):
     click.echo(J(res))
 
 
+@ec2.command()
+@click.argument('group_id')
+@click.pass_context
+def allow_cloudfront_ip(ctx, group_id):
+    res = requests.get('')

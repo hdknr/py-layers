@@ -15,6 +15,7 @@ def dispatch():
             del sys.argv[1]
             func = getattr(mod, name)
         except:
+            import traceback; print(traceback.format_exc())
             pass
 
     func and func(obj={})
