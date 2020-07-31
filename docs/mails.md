@@ -1,5 +1,9 @@
 # mails
 
+## TODO
+
+- Remove unnecessary files in S3 bucket.
+
 ## SES Forewarding
 
 ### 1. Verify Domain
