@@ -3,7 +3,7 @@ This product includes software developed at:
 * hdknr
 * Lafoglia,Inc
 
-Copyright 2019  Hideki Nara
+Copyright 2020  Hideki Nara
 
 Brand names include, but are not limited to:
 
