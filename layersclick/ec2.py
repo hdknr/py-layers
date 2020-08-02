@@ -133,7 +133,7 @@ def allow_cloudfront_ip(ctx, group_id, word, port, dry):
     if dry:
         click.echo(new_cidrs_ip) 
         click.echo(new_cidrs_ipv6) 
-    else:
+    elif len(new_cidrs_ip) > 0 or len(new_cidrs_ipv6) > 0:
         EC2.authorize_port(group_id, word, port, new_cidrs_ip, new_cidrs_ipv6)
 
 
