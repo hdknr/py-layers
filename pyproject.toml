@@ -13,6 +13,7 @@ python = "^3.8"
 click = "^7.1.2"
 boto3 = "^1.14.33"
 pymongo = "^3.11.0"
+requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
