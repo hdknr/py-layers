@@ -1,7 +1,4 @@
 import click
-import boto3
-import json
-import requests
 from itertools import chain
 from .utils import setup, J, my_ipaddress
 from layerslib import ec2 as EC2 , cloudfront as CF
@@ -30,7 +27,7 @@ def instance_list(ctx):
 @click.pass_context
 def vpc_detail(ctx, name):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_vpcs 
-    response = vpcs(name=name)
+    response = EC2.vpcs(name=name)
     click.echo(J(response))
 
 
@@ -53,7 +50,7 @@ def port_list(ctx, group):
 @click.pass_context
 def vpc_instance_list(ctx, vpc):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Vpc.instances
-    vpcobj = get_vpc(vpc)
+    vpcobj = EC2.get_vpc(vpc)
     # <class 'boto3.resources.collection.ec2.Vpc.instancesCollection'>
     instances = vpcobj.instances.all()  # ec2.Vpc.instancesCollection
     for instance in instances:
@@ -127,14 +124,26 @@ def allow_cloudfront_ip(ctx, group_id, word, port, dry):
 
     cidrs_ip, cidrs_ipv6 = CF.edge_server_cidrs()
 
-    new_cidrs_ip = list(filter(lambda i: i not in sg_cidrs_ip, cidrs_ip))
-    new_cidrs_ipv6 = list(filter(lambda i: i not in sg_cidrs_ipv6, cidrs_ipv6))
+    new_cidrs_ip = list(set(sg_cidrs_ip) - set(cidrs_ip))
+    new_cidrs_ipv6 = list(set(sg_cidrs_ipv6) - set(cidrs_ipv6))
+
+    del_cidrs_ip = list(set(cidrs_ip) - set(sg_cidrs_ip))
+    del_cidrs_ipv6 = list(set(cidrs_ipv6) - set(sg_cidrs_ipv6)) 
 
     if dry:
-        click.echo(new_cidrs_ip) 
-        click.echo(new_cidrs_ipv6) 
-    elif len(new_cidrs_ip) > 0 or len(new_cidrs_ipv6) > 0:
+        click.echo(f"New:{new_cidrs_ip} {new_cidrs_ipv6}") 
+        click.echo(f"Deleted:{del_cidrs_ip} {del_cidrs_ip}") 
+        return
+
+    # Add News
+    if len(new_cidrs_ip) > 0 or len(new_cidrs_ipv6) > 0:
         EC2.authorize_port(group_id, word, port, new_cidrs_ip, new_cidrs_ipv6)
+    
+    # Remove deleted.
+    for cidr in del_cidrs_ip:
+        EC2.revoke_port(group_id, port, cidr)
+    for cidr_ipv6 in del_cidrs_ipv6:
+        EC2.revoke_port(group_id, port, cidr_ipv6)
 
 
 @ec2.command()
