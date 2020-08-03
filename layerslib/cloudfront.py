@@ -1,8 +1,9 @@
 ## https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudfront.html
 import boto3
-import json
-import requests
+import urllib.request
 from .utils import create_ref_id
+import json
+
 
 def client():
     return boto3.client('cloudfront')
@@ -37,8 +38,8 @@ def invalidate(distribution_id, *files, ref_id=None):
 
 
 def edge_server_cidrs():
-    URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json'
-    ip_ranges = requests.get(URL).json()
+    url = 'https://ip-ranges.amazonaws.com/ip-ranges.json'
+    ip_ranges = json.loads(urllib.request.urlopen(url).read())
     ips = [item['ip_prefix'] for item in ip_ranges['prefixes'] if item["service"] == "CLOUDFRONT"]
     ips_v6= [item['ipv6_prefix'] for item in ip_ranges['ipv6_prefixes'] if item["service"] == "CLOUDFRONT"]
     return (ips, ips_v6)
