@@ -107,18 +107,13 @@ def all_secgroups(name=None):
     return response.get('SecurityGroups', [])
 
 
-def authorize_port(group_id, description, cidr, port, proto='tcp'):
+def authorize_port(group_id, description, port, cidrs=[], cidrs_v6=[], proto='tcp'):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.authorize_security_group_ingress
-    ips = dict(
-        CidrIp=cidr,
-        Description=description,
-    )
-    perms = dict(
-        IpProtocol=proto,
-        FromPort=port,
-        ToPort=port,
-        IpRanges=[ips]
-    )
+    ips = [dict(CidrIp=i, Description=description) for i in cidrs]
+    ips_v6 = [dict(CidrIpv6=i, Description=description) for i in cidrs_v6]
+
+    perms = dict(IpProtocol=proto, FromPort=port, ToPort=port, IpRanges=ips, Ipv6Ranges=ips_v6)
+
     return client().authorize_security_group_ingress(
         GroupId=group_id, IpPermissions=[perms])
 
@@ -133,6 +128,18 @@ def revoke_port(group_id, cidr, port, proto='tcp'):
         ToPort=port,
     )
 
+def list_security_groups():
+    res = client().describe_security_groups()
+    return res['SecurityGroups']
+
 
 def get_security_group(id):
-    return resource().SecurityGroup(id)
+    res = resource().SecurityGroup(id)
+    return res
+
+
+def find_cidrs(rule, ip, word):
+    return list(
+        map(lambda i: i[f'Cidr{ip}'],
+            filter(lambda i: i.get('Description', '').find(word) >=0, rule[f'{ip}Ranges']))
+    )
