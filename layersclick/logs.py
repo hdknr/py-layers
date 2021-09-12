@@ -1,20 +1,21 @@
 import click
-import boto3
-from .utils import setup, J
-from layerslib.logs import filter_events, all_groups
+
+from layerslib.logs import all_groups, filter_events
+
+from .utils import J, setup
 
 
 @click.group()
-@click.option('--profile_name', '-p', default=None)
+@click.option("--profile_name", "-p", default=None)
 @click.pass_context
 def logs(ctx, profile_name):
     setup(ctx, profile_name)
 
 
 @logs.command()
-@click.argument('group_name')
-@click.argument('pattern')
-@click.option('--seconds', '-s', default=None)
+@click.argument("group_name")
+@click.argument("pattern")
+@click.option("--seconds", "-s", default=None)
 @click.pass_context
 def filter(ctx, group_name, pattern, seconds):
     res = filter_events(group_name, pattern, seconds=seconds)

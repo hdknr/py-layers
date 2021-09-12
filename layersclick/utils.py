@@ -1,9 +1,10 @@
-import boto3
+import importlib.util
 import json
 import os
-import importlib.util
-from bson import json_util
+
+import boto3
 import requests
+from bson import json_util
 
 
 def J(data, indent=2, **kwargs):
@@ -20,28 +21,28 @@ def import_settings(path):
 def create_settings(path):
     if not path:
         return None
-    if path.endswith('.json'):
-        return type('', (object,), json.load(open(path)))
-    elif path.endswith('.py'):
+    if path.endswith(".json"):
+        return type("", (object,), json.load(open(path)))
+    elif path.endswith(".py"):
         return import_settings(path)
 
 
 def create_session(profile_name):
     session = boto3.Session(profile_name=profile_name)
     credentials = session.get_credentials()
-    os.environ['AWS_DEFAULT_REGION'] = session.region_name
-    os.environ['AWS_ACCESS_KEY_ID'] = credentials.access_key
-    os.environ['AWS_SECRET_ACCESS_KEY'] = credentials.secret_key
+    os.environ["AWS_DEFAULT_REGION"] = session.region_name
+    os.environ["AWS_ACCESS_KEY_ID"] = credentials.access_key
+    os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.secret_key
 
     return (session, credentials)
 
 
 def setup(ctx, profile_name, settings=None):
     if settings:
-        ctx.obj['settings'] = create_settings(settings)
+        ctx.obj["settings"] = create_settings(settings)
     if profile_name:
-        (ctx.obj['session'] , ctx.obj['credentials']) = create_session(profile_name)
+        (ctx.obj["session"], ctx.obj["credentials"]) = create_session(profile_name)
 
 
 def my_ipaddress():
-    return requests.get('http://inet-ip.info/ip').text
+    return requests.get("http://inet-ip.info/ip").text

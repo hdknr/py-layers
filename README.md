@@ -28,3 +28,10 @@ Brand names include, but are not limited to:
 this software without prior written permission of Hideki Nara.
 
 For license information, please read the LICENSE file.
+
+
+## poetry
+
+~~~
+% poetry add -D pysen -E lint
+~~~

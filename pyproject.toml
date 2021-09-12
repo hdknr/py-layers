@@ -17,6 +17,8 @@ requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+pysen = {version = "^0.9.1", extras = ["lint"]}
+flake8 = "^3.9.2"
 
 [tool.poetry.scripts]
 layers = 'layersclick:dispatch'
@@ -25,3 +27,38 @@ layers = 'layersclick:dispatch'
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
+
+[tool.black]
+line-length = 119
+exclude = '''
+(
+    migrations
+    | .mypy_cache
+    | .pytest_cache
+    | .tox
+    | venv
+)
+'''
+
+[tool.isort]
+include_trailing_comma = true
+line_length = 119
+multi_line_output = 3
+
+[tool.flake8]
+max-line-length = 119
+extend-ignore = "E203,W503,W504"
+
+[tool.pysen]
+version = "0.9"
+
+[tool.pysen.lint]
+enable_black = true
+enable_flake8 = true
+enable_isort = true
+enable_mypy = true
+mypy_preset = "strict"
+line_length = 119
+py_version = "py37"
+[[tool.pysen.lint.mypy_targets]]
+  paths = ["."]
