@@ -33,6 +33,15 @@ def instance_list(ctx):
 
 
 @ec2.command()
+@click.argument("instance_id")
+@click.pass_context
+def create_ami(ctx, instance_id):
+    """ec2: create AMI for instance_id """
+    instance = EC2.Instance.factory(instance_id)
+    instance.create_image()
+
+
+@ec2.command()
 @click.option("--name", "-n", default=None)
 @click.pass_context
 def vpc_detail(ctx, name):
