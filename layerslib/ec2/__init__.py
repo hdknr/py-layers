@@ -1,14 +1,7 @@
 import json
 
-import boto3
-
-
-def client():
-    return boto3.client("ec2")
-
-
-def resource():
-    return boto3.resource("ec2")
+from .base import client, resource
+from .instance import Instance  # NOQA
 
 
 def F(key, value):
