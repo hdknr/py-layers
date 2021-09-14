@@ -16,32 +16,6 @@ def ec2(ctx, profile_name):
 
 
 @ec2.command()
-@click.pass_context
-def instance_list(ctx):
-    """ec2: get Instance
-
-    layers ec2 -p yourog instance-list \
-        | jq -r ".[] | [
-            .InstanceId,
-            .Tags[0].Value,
-            .SecurityGroups[0].GroupName,
-            .SecurityGroups[0].GroupId] | @csv" \
-        | csvtomd
-    """
-    instances = EC2.get_instances()
-    click.echo(J(instances))
-
-
-@ec2.command()
-@click.argument("instance_id")
-@click.pass_context
-def create_ami(ctx, instance_id):
-    """ec2: create AMI for instance_id """
-    instance = EC2.Instance.factory(instance_id)
-    instance.create_image()
-
-
-@ec2.command()
 @click.option("--name", "-n", default=None)
 @click.pass_context
 def vpc_detail(ctx, name):
@@ -60,7 +34,8 @@ def port_list(ctx, group):
         for p in g.get("IpPermissions", []):
             for r in p.get("IpRanges", []):
                 description = r.get("Description", "")
-                click.echo(f"{g['VpcId']} {p['IpProtocol']}/{p['FromPort']} {r['CidrIp']} {description}")
+                click.echo(
+                    f"{g['VpcId']} {p['IpProtocol']}/{p['FromPort']} {r['CidrIp']} {description}")
 
 
 @ec2.command()
@@ -90,7 +65,8 @@ def myip_allow(ctx, port, description, group, proto):
     myip = my_ipaddress()
     for gid in group_ids:
         click.echo(f"allowing {gid}: {proto}/{port} for {myip}")
-        res = EC2.authorize_port(gid, description, int(port), cidrs=[f"{myip}/32"], proto=proto)
+        res = EC2.authorize_port(gid, description, int(
+            port), cidrs=[f"{myip}/32"], proto=proto)
         click.echo(J(res))
 
 
@@ -145,8 +121,10 @@ def allow_cloudfront_ip(ctx, group_id, word, port, dry):
         )
     )
 
-    sg_cidrs_ip = list(chain(*(EC2.find_cidrs(rule, "Ip", word) for rule in rules)))
-    sg_cidrs_ipv6 = list(chain(*(EC2.find_cidrs(rule, "Ipv6", word) for rule in rules)))
+    sg_cidrs_ip = list(chain(*(EC2.find_cidrs(rule, "Ip", word)
+                       for rule in rules)))
+    sg_cidrs_ipv6 = list(
+        chain(*(EC2.find_cidrs(rule, "Ipv6", word) for rule in rules)))
 
     cidrs_ip, cidrs_ipv6 = CF.edge_server_cidrs()
 
