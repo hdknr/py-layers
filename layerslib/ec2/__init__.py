@@ -29,24 +29,10 @@ def FS(*attr, tag=()):
 ATTR_IS_RUNNNING = ("instance-state-name", "running")
 
 
-def get_instances(filters=None):
-    """
-    - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances
-    - https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeInstances.html
-    """
-    q = filters and dict(Filters=filters) or {}
-    res = client().describe_instances(**q)
-    instances = [i for r in res["Reservations"] for i in r["Instances"]]
-    return instances
-
-
-def get_instance_ids(*args, **kwargs):
-    return [i["InstanceId"] for i in get_instances(*args, **kwargs)]
-
-
 def vpcs(name=None):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_vpcs
-    args = name and dict(Filters=[{"Name": "tag:Name", "Values": [name]}]) or {}
+    args = name and dict(
+        Filters=[{"Name": "tag:Name", "Values": [name]}]) or {}
     res = client().describe_vpcs(**args)
     return res.get("Vpcs", [])
 
@@ -75,7 +61,8 @@ def authorize_port(group_id, description, port, cidrs=None, cidrs_v6=None, proto
     ips = [dict(CidrIp=i, Description=description) for i in cidrs]
     ips_v6 = [dict(CidrIpv6=i, Description=description) for i in cidrs_v6]
 
-    perms = dict(IpProtocol=proto, FromPort=port, ToPort=port, IpRanges=ips, Ipv6Ranges=ips_v6)
+    perms = dict(IpProtocol=proto, FromPort=port,
+                 ToPort=port, IpRanges=ips, Ipv6Ranges=ips_v6)
 
     return client().authorize_security_group_ingress(GroupId=group_id, IpPermissions=[perms])
 
@@ -103,5 +90,6 @@ def get_security_group(id):
 
 def find_cidrs(rule, ip, word):
     return list(
-        map(lambda i: i[f"Cidr{ip}"], filter(lambda i: i.get("Description", "").find(word) >= 0, rule[f"{ip}Ranges"]))
+        map(lambda i: i[f"Cidr{ip}"], filter(lambda i: i.get(
+            "Description", "").find(word) >= 0, rule[f"{ip}Ranges"]))
     )
