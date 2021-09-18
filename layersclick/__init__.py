@@ -15,7 +15,8 @@ def subcommands():
 def get_subcommand():
     import argparse
 
-    parser = argparse.ArgumentParser(description="AWS Command Tools Set", add_help=False)
+    parser = argparse.ArgumentParser(
+        description="AWS Command Tools Set", add_help=False)
     parser.add_argument("subcommand", choices=subcommands())
     args, unkonwns = parser.parse_known_args()
     return args.subcommand
